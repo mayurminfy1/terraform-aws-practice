@@ -1,6 +1,6 @@
 provider "aws" {
   region  = var.aws_region
-  profile = "AdminAccess-034138043057"
+  profile = "AdminAccess"
 }
 
 resource "aws_vpc" "main" {
