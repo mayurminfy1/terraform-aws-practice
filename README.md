@@ -112,6 +112,18 @@ terraform destroy	Remove all provisioned resources
               EOF
 }
 ```
+### Folder Structure
+```
+├── assignment-02-reusable-webserver/
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   └── modules/
+│       └── ec2_instance/
+│           ├── main.tf
+│           ├── variables.tf
+│           └── outputs.tf
+```
 
 
 
@@ -133,5 +145,86 @@ terraform destroy	Remove all provisioned resources
   [`http//3.109.206.116`](http//3.109.206.116)
 
 ✅ This assignment demonstrates Terraform modules for reusable, maintainable AWS infrastructure. You’ve learned to structure, parameterize, and call modules just like functions in your code!
+
+# ☁️ Terraform S3 Bucket - Class Task  
+## 🗃️ Store Terraform State Remotely Using Amazon S3
+
+---
+
+### 📋 Overview
+
+| Section         | Details |
+|----------------|---------|
+| 🎯 **Objective** | Create an S3 bucket using Terraform and configure it as a backend to store remote state. |
+| 🧠 **Why Remote Backend?** | Terraform state must be stored securely and consistently. Storing it in an S3 bucket helps teams collaborate and ensures state isn't lost locally. |
+| 🔧 **Prerequisites** | <ul><li>✅ AWS CLI configured</li><li>✅ Terraform CLI installed</li></ul> |
+
+---
+
+
+
+
+### 🔨 Step-by-Step Execution
+
+#### 🪣 1️⃣ Create the S3 Bucket for Remote Backend
+
+`main.tf`
+```hcl
+resource "aws_s3_bucket" "day_2_bucket" {
+  bucket = var.bucket_name
+
+  tags = {
+    Name        = var.bucket_name
+    Environment = "dev"
+  }
+}
+
+resource "aws_s3_bucket_versioning" "versioning" {
+  bucket = aws_s3_bucket.day_2_bucket.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+```
+`backend.tf`
+```hcl
+terraform {
+  backend "s3" {
+    bucket = "day-2-mayur-s3-bucket"
+    key    = "terraform.tfstate"
+    region = "ap-south-1"
+  }
+}
+```
+
+### 📸 Screenshots
+
+| Description                   | Preview |
+|-------------------------------|---------|
+| ✅ S3 Bucket Created     | ![S3 Buscket Created](https://github.com/mayurminfy1/photos/blob/main/S3/s34.png?raw=true) |
+| ✅ S3  Bucket in AWS Console     | ![S3](https://github.com/mayurminfy1/photos/blob/main/S3/s31.png?raw=true) |
+| 🌍 S3 Backend     | ![Website Screenshot](https://github.com/mayurminfy1/photos/blob/main/S3/Screenshot%202025-06-14%20164409.png?raw=true) |
+| 🗑️ S3 Destroyed         | ![ Destroyed](https://github.com/mayurminfy1/photos/blob/main/S3/s35.png?raw=true) |
+
+
+---
+
+### ⚠️ Notes
+
+- ❗ **Commit only `.tf` files** — never push `.tfstate`, `.tfstate.backup`, or the `.terraform/` directory.
+- 🕒 **Enable versioning** on your S3 bucket to allow safe rollback of Terraform state.
+- 🔐 **Store sensitive values** like AWS credentials or secrets in:
+  - Environment variables (`export AWS_ACCESS_KEY_ID=...`)
+  - `.tfvars` files (e.g., `secrets.tfvars`) **but never commit them**
+
+
+
+
+
+
+
+
+
 
 
