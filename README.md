@@ -146,7 +146,7 @@ terraform destroy	Remove all provisioned resources
 
 ✅ This assignment demonstrates Terraform modules for reusable, maintainable AWS infrastructure. You’ve learned to structure, parameterize, and call modules just like functions in your code!
 
-# ☁️ Terraform S3 Bucket - Class Task  
+# ☁️ Terraform S3 Bucket - Class Task 1
 ## 🗃️ Store Terraform State Remotely Using Amazon S3
 
 ---
@@ -217,6 +217,105 @@ terraform {
 - 🔐 **Store sensitive values** like AWS credentials or secrets in:
   - Environment variables (`export AWS_ACCESS_KEY_ID=...`)
   - `.tfvars` files (e.g., `secrets.tfvars`) **but never commit them**
+---
+
+# Class Task - 2
+# 🚀 EC2 Instance with Open Inbound Rules using Terraform
+
+---
+
+## 📋 Overview
+
+| Section         | Details |
+|----------------|---------|
+| 🎯 **Objective** | Launch an EC2 instance using Terraform with a security group allowing SSH and all inbound traffic. |
+| 🧠 **Background** | EC2 (Elastic Compute Cloud) allows you to run virtual servers on AWS. This guide uses Terraform to provision an EC2 instance and configure security group rules. |
+| 🔧 **Prerequisites** | <ul><li>✅ Terraform CLI installed</li><li>✅ AWS CLI configured (`aws configure`)</li><li>✅ IAM user with EC2 and VPC permissions</li></ul> |
+
+---
+
+## 🗂️ File Structure
+```
+day-2-mayur-terraform/
+├── main.tf
+├── variables.tf
+├── outputs.tf
+└── providers.tf
+```
+## Traffic Rules
+```
+resource "aws_security_group" "web_sg" {
+  name        = "day-2-mayur-web-sg"
+  description = "Allow SSH and HTTP"
+  vpc_id      = aws_vpc.vpc.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "day-2-mayur-web-sg"
+  }
+}
+
+
+resource "aws_instance" "web" {
+  ami                    = var.ami_id
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.public_subnet.id
+  vpc_security_group_ids = [aws_security_group.web_sg.id]
+  associate_public_ip_address = true
+
+  user_data = <<-EOF
+              #!/bin/bash
+              yum update -y
+              yum install -y httpd
+              systemctl start httpd
+              systemctl enable httpd
+              echo "<h1>Terraform day-2-mayur EC2 - $(hostname)</h1>" > /var/www/html/index.html
+              EOF
+
+  tags = {
+    Name = "day-2-mayur-web-server"
+  }
+}
+```
+# Access the Instance
+```
+ssh -i your-key.pem ec2-user@<public-ip>
+```
+
+### 📸 Screenshots
+
+| Description                   | Preview |
+|-------------------------------|---------|
+| ✅ Terraform Apply Output     | ![Apply](https://github.com/mayurminfy1/photos/blob/main/aws%20services/ss18.png?raw=true) |
+| ✅ Instance in AWS Console     | ![AWS](https://github.com/mayurminfy1/photos/blob/main/aws%20services/ss3.png?raw=true) |
+| 🌍 EC2 Web Output     | ![Website Screenshot](https://github.com/mayurminfy1/photos/blob/main/aws%20services/ss1.png?raw=true) |
+| 🗑️ Instance Destroyed         | ![ Destroyed](https://github.com/mayurminfy1/photos/blob/main/aws%20services/ss19.png?raw=true) |
+
+🌐 **Live Website**: 
+
+  [`http//43.205.117.8`](http//43.205.117.8)
+
+
 
 
 
